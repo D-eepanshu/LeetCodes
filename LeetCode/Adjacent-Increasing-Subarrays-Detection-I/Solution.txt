@@ -1,0 +1,22 @@
+class Solution {
+public:
+    bool hasIncreasingSubarrays(vector<int>& nums, int k) {
+        int n = nums.size();
+
+        // Helper lambda to check if a subarray [start, start+k-1] is strictly increasing
+        auto isIncreasing = [&](int start) {
+            for (int i = start; i < start + k - 1; i++) {
+                if (nums[i] >= nums[i + 1]) return false;
+            }
+            return true;
+        };
+
+        // Check for adjacent increasing subarrays
+        for (int a = 0; a + 2 * k <= n; a++) {
+            if (isIncreasing(a) && isIncreasing(a + k)) {
+                return true;
+            }
+        }
+        return false;
+    }
+};
