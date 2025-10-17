@@ -2,68 +2,64 @@ class Solution {
 public:
     int maxPartitionsAfterOperations(string s, int k) {
         int n = s.size();
-        // Memoization map: key = (index << 32) | (charMask << 1) | canChange
-        unordered_map<long long, int> memo;
-      
-        // DFS function to find maximum partitions
-        // Parameters:
-        // - index: current position in string
-        // - charMask: bitmask representing distinct characters in current partition
-        // - canChange: flag indicating if we can still change one character (1 = yes, 0 = no)
-        function<int(int, int, int)> dfs = [&](int index, int charMask, int canChange) {
-            // Base case: reached end of string, count last partition
-            if (index >= n) {
-                return 1;
-            }
-          
-            // Create unique key for memoization
-            long long stateKey = (long long)index << 32 | charMask << 1 | canChange;
-          
-            // Return memoized result if exists
-            if (memo.count(stateKey)) {
-                return memo[stateKey];
-            }
-          
-            // Get bitmask for current character
-            int currentCharBit = 1 << (s[index] - 'a');
-          
-            // Calculate new character mask if we add current character
-            int newCharMask = charMask | currentCharBit;
-          
-            // Calculate result without changing current character
-            int maxPartitions;
-            if (__builtin_popcount(newCharMask) > k) {
-                // Too many distinct characters, start new partition
-                maxPartitions = dfs(index + 1, currentCharBit, canChange) + 1;
-            } else {
-                // Continue with current partition
-                maxPartitions = dfs(index + 1, newCharMask, canChange);
-            }
-          
-            // Try changing current character if we still have the option
-            if (canChange) {
-                // Try replacing current character with each letter 'a' to 'z'
-                for (int letter = 0; letter < 26; ++letter) {
-                    int replacementCharBit = 1 << letter;
-                    newCharMask = charMask | replacementCharBit;
-                  
-                    if (__builtin_popcount(newCharMask) > k) {
-                        // Too many distinct characters, start new partition
-                        maxPartitions = max(maxPartitions, 
-                                          dfs(index + 1, replacementCharBit, 0) + 1);
-                    } else {
-                        // Continue with current partition
-                        maxPartitions = max(maxPartitions, 
-                                          dfs(index + 1, newCharMask, 0));
-                    }
+        this->s = &s;
+        this->k = k;
+        this->n = n;
+        
+        memo.clear();
+        
+        return dfs(0, 0, true);
+    }
+    
+private:
+    const string* s;
+    int k, n;
+    unordered_map<long long, int> memo;
+    
+    int dfs(int idx, int mask, bool canChange) {
+        // Base case: reached end of string
+        if (idx >= n) {
+            return 1;
+        }
+        
+        // Create unique key for memoization
+        long long key = ((long long)idx << 32) | (mask << 1) | canChange;
+        
+        auto it = memo.find(key);
+        if (it != memo.end()) {
+            return it->second;
+        }
+        
+        int curBit = 1 << ((*s)[idx] - 'a');
+        int newMask = mask | curBit;
+        
+        // Option 1: Don't change current character
+        int res;
+        if (__builtin_popcount(newMask) > k) {
+            // Too many distinct characters, start new partition
+            res = dfs(idx + 1, curBit, canChange) + 1;
+        } else {
+            // Continue with current partition
+            res = dfs(idx + 1, newMask, canChange);
+        }
+        
+        // Option 2: Change current character (if allowed)
+        if (canChange) {
+            // Try all 26 possible characters
+            for (int c = 0; c < 26; c++) {
+                int replaceBit = 1 << c;
+                int testMask = mask | replaceBit;
+                
+                if (__builtin_popcount(testMask) > k) {
+                    // Changing causes overflow, start new partition
+                    res = max(res, dfs(idx + 1, replaceBit, false) + 1);
+                } else {
+                    // Continue with current partition
+                    res = max(res, dfs(idx + 1, testMask, false));
                 }
             }
-          
-            // Memoize and return result
-            return memo[stateKey] = maxPartitions;
-        };
-      
-        // Start DFS from index 0, empty character mask, with ability to change one character
-        return dfs(0, 0, 1);
+        }
+        
+        return memo[key] = res;
     }
 };
