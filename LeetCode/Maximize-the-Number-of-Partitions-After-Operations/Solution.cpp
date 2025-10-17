@@ -1,62 +1,49 @@
 class Solution {
 public:
     int maxPartitionsAfterOperations(string s, int k) {
-        int n = s.size();
-        this->s = &s;
+        n = s.size();
+        this->s = s;
         this->k = k;
-        this->n = n;
         
         memo.clear();
+        memo.reserve(n * 128);
         
-        return dfs(0, 0, true);
+        return dfs(0, 0, 1);
     }
     
 private:
-    const string* s;
-    int k, n;
+    string s;
+    int n, k;
     unordered_map<long long, int> memo;
     
-    int dfs(int idx, int mask, bool canChange) {
-        // Base case: reached end of string
-        if (idx >= n) {
-            return 1;
-        }
+    inline int dfs(int idx, int mask, int canChange) {
+        if (idx >= n) return 1;
         
-        // Create unique key for memoization
-        long long key = ((long long)idx << 32) | (mask << 1) | canChange;
+        long long key = ((long long)idx << 32) | ((long long)mask << 1) | canChange;
         
         auto it = memo.find(key);
-        if (it != memo.end()) {
-            return it->second;
-        }
+        if (it != memo.end()) return it->second;
         
-        int curBit = 1 << ((*s)[idx] - 'a');
+        int curBit = 1 << (s[idx] - 'a');
         int newMask = mask | curBit;
         
-        // Option 1: Don't change current character
-        int res;
-        if (__builtin_popcount(newMask) > k) {
-            // Too many distinct characters, start new partition
-            res = dfs(idx + 1, curBit, canChange) + 1;
-        } else {
-            // Continue with current partition
-            res = dfs(idx + 1, newMask, canChange);
-        }
+        // Don't change current character
+        int res = (__builtin_popcount(newMask) > k) ? 
+                  dfs(idx + 1, curBit, canChange) + 1 : 
+                  dfs(idx + 1, newMask, canChange);
         
-        // Option 2: Change current character (if allowed)
+        // Try changing if allowed
         if (canChange) {
-            // Try all 26 possible characters
+            // Try all 26 characters
             for (int c = 0; c < 26; c++) {
-                int replaceBit = 1 << c;
-                int testMask = mask | replaceBit;
+                int bit = 1 << c;
+                int testMask = mask | bit;
                 
-                if (__builtin_popcount(testMask) > k) {
-                    // Changing causes overflow, start new partition
-                    res = max(res, dfs(idx + 1, replaceBit, false) + 1);
-                } else {
-                    // Continue with current partition
-                    res = max(res, dfs(idx + 1, testMask, false));
-                }
+                int val = (__builtin_popcount(testMask) > k) ?
+                          dfs(idx + 1, bit, 0) + 1 :
+                          dfs(idx + 1, testMask, 0);
+                
+                if (val > res) res = val;
             }
         }
         
