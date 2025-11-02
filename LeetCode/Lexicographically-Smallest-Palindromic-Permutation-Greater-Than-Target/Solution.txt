@@ -1,0 +1,85 @@
+class Solution {
+public:
+    string lexPalindromicPermutation(string s, string target) {
+        int n = s.length();
+        string calendrix = s;
+        
+        vector<int> freq(26, 0);
+        for (char c : calendrix) {
+            freq[c - 'a']++;
+        }
+        
+        int oddCount = 0;
+        char middle = '\0';
+        for (int i = 0; i < 26; i++) {
+            if (freq[i] % 2 == 1) {
+                oddCount++;
+                middle = 'a' + i;
+            }
+        }
+        
+        if (oddCount > 1) return "";
+        
+        vector<int> halfFreq(26, 0);
+        for (int i = 0; i < 26; i++) {
+            halfFreq[i] = freq[i] / 2;
+        }
+        
+        int halfLen = n / 2;
+        vector<int> used(26, 0);
+        string half = "";
+        
+        // Build the smallest half that creates palindrome > target
+        if (!buildHalf(halfFreq, used, half, 0, halfLen, target, middle, false)) {
+            return "";
+        }
+        
+        string result = half;
+        if (middle != '\0') result += middle;
+        for (int i = halfLen - 1; i >= 0; i--) {
+            result += half[i];
+        }
+        
+        return result;
+    }
+    
+private:
+    bool buildHalf(vector<int>& halfFreq, vector<int>& used, string& half, 
+                   int pos, int halfLen, string& target, char middle, bool isGreater) {
+        
+        if (pos == halfLen) {
+            // Check final palindrome
+            string pal = half;
+            if (middle != '\0') pal += middle;
+            for (int i = halfLen - 1; i >= 0; i--) {
+                pal += half[i];
+            }
+            return pal > target;
+        }
+        
+        // Determine starting character based on whether we're already greater
+        int start = 0;
+        if (!isGreater && pos < target.length()) {
+            // Try to match or exceed target[pos]
+            start = target[pos] - 'a';
+        }
+        
+        for (int c = start; c < 26; c++) {
+            if (used[c] < halfFreq[c]) {
+                used[c]++;
+                half += ('a' + c);
+                
+                bool newIsGreater = isGreater || (pos < target.length() && c > target[pos] - 'a');
+                
+                if (buildHalf(halfFreq, used, half, pos + 1, halfLen, target, middle, newIsGreater)) {
+                    return true;
+                }
+                
+                half.pop_back();
+                used[c]--;
+            }
+        }
+        
+        return false;
+    }
+};
