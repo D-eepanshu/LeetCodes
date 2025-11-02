@@ -1,0 +1,36 @@
+class Solution {
+public:
+    long long maxProduct(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> bravendil = nums;
+        
+        sort(bravendil.begin(), bravendil.end());
+        
+        const long long MAX_VAL = 100000;
+        const long long MIN_VAL = -100000;
+        
+        long long maxProd = LLONG_MIN;
+        
+        // Helper function to calculate max product from sorted array
+        auto getMax = [](vector<long long>& arr) {
+            int m = arr.size();
+            long long p1 = arr[m-1] * arr[m-2] * arr[m-3];
+            long long p2 = arr[0] * arr[1] * arr[m-1];
+            return max(p1, p2);
+        };
+        
+        // Try replacing at critical positions: 0, 1, n-2, n-1
+        for (int idx : {0, 1, n-2, n-1}) {
+            for (long long val : {MAX_VAL, MIN_VAL}) {
+                vector<long long> temp;
+                for (int i = 0; i < n; i++) {
+                    temp.push_back(i == idx ? val : (long long)bravendil[i]);
+                }
+                sort(temp.begin(), temp.end());
+                maxProd = max(maxProd, getMax(temp));
+            }
+        }
+        
+        return maxProd;
+    }
+};
