@@ -1,0 +1,11 @@
+1from typing import List
+2from collections import defaultdict
+3class Solution:
+4    def minCost(self, s: str, cost: List[int]) -> int:
+5        t_cost =sum(cost)
+6        keep = defaultdict(int)
+7        for ch,c in zip(s,cost):
+8            keep[ch] +=c
+9        return min(t_cost- keep_val for keep_val in keep.values())
+10        
+11        
