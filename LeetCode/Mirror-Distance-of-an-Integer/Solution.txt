@@ -1,0 +1,7 @@
+1class Solution:
+2    def mirrorDistance(self, n: int) -> int:
+3        rev = int(str(n)[::-1])
+4        return abs(n-rev)
+5
+6        #takes O(d) TIMES TO RETURN where d is number of digits
+7        
