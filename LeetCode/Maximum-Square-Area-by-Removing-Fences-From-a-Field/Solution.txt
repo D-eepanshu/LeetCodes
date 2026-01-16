@@ -1,0 +1,65 @@
+1class Solution:
+2    def maximizeSquareArea(
+3        self, m: int, n: int, hFences: List[int], vFences: List[int]
+4    ) -> int:
+5        """
+6        Find the maximum square area that can be formed in a field with fences.
+7      
+8        Args:
+9            m: Width of the field
+10            n: Height of the field
+11            hFences: List of horizontal fence positions
+12            vFences: List of vertical fence positions
+13          
+14        Returns:
+15            Maximum square area modulo 10^9 + 7, or -1 if no square can be formed
+16        """
+17      
+18        def get_all_distances(fence_positions: List[int], field_size: int) -> Set[int]:
+19            """
+20            Calculate all possible distances between any two fence positions,
+21            including the field boundaries.
+22          
+23            Args:
+24                fence_positions: List of fence positions
+25                field_size: Size of the field dimension (width or height)
+26              
+27            Returns:
+28                Set of all possible distances between fence pairs
+29            """
+30            # Add field boundaries (1 and field_size) to fence positions
+31            all_positions = fence_positions + [1, field_size]
+32            # Sort positions for consistent processing
+33            all_positions.sort()
+34          
+35            # Calculate all possible distances between any two positions
+36            distances = set()
+37            for i in range(len(all_positions)):
+38                for j in range(i + 1, len(all_positions)):
+39                    distance = all_positions[j] - all_positions[i]
+40                    distances.add(distance)
+41          
+42            return distances
+43      
+44        # Modulo value for the result
+45        MOD = 10**9 + 7
+46      
+47        # Get all possible horizontal distances
+48        horizontal_distances = get_all_distances(hFences, m)
+49      
+50        # Get all possible vertical distances
+51        vertical_distances = get_all_distances(vFences, n)
+52      
+53        # Find common distances (these can form squares)
+54        common_distances = horizontal_distances & vertical_distances
+55      
+56        # Get the maximum common distance (largest square side length)
+57        max_side_length = max(common_distances, default=0)
+58      
+59        # Calculate and return the area
+60        if max_side_length > 0:
+61            area = (max_side_length ** 2) % MOD
+62            return area
+63        else:
+64            # No square can be formed
+65            return -1
