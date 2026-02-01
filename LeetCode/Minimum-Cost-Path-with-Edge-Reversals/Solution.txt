@@ -1,0 +1,53 @@
+1class Solution {
+2public:
+3    int minCost(int n, vector<vector<int>>& edges) {
+4        vector<vector<pair<int,int>>> g(n), rg(n);
+5
+6        for (auto &e : edges) {
+7            g[e[0]].push_back({e[1], e[2]});
+8            rg[e[1]].push_back({e[0], e[2]});
+9        }
+10
+11        const long long INF = 1e18;
+12        vector<vector<long long>> dist(n, vector<long long>(2, INF));
+13
+14        priority_queue<
+15            tuple<long long,int,int>,
+16            vector<tuple<long long,int,int>>,
+17            greater<>
+18        > pq;
+19
+20        dist[0][0] = 0;
+21        pq.push({0, 0, 0});
+22
+23        while (!pq.empty()) {
+24            auto [cost, u, used] = pq.top();
+25            pq.pop();
+26
+27            if (cost > dist[u][used]) continue;
+28
+29            // Normal forward edges → next node's switch is unused
+30            for (auto &[v, w] : g[u]) {
+31                if (dist[v][0] > cost + w) {
+32                    dist[v][0] = cost + w;
+33                    pq.push({dist[v][0], v, 0});
+34                }
+35            }
+36
+37            // Reverse one incoming edge (use switch at u)
+38            if (used == 0) {
+39                for (auto &[v, w] : rg[u]) {
+40                    long long newCost = cost + 2LL * w;
+41                    if (dist[v][0] > newCost) {
+42                        dist[v][0] = newCost;
+43                        pq.push({newCost, v, 0});
+44                    }
+45                }
+46            }
+47        }
+48
+49        long long ans = min(dist[n-1][0], dist[n-1][1]);
+50        return ans == INF ? -1 : (int)ans;
+51    }
+52};
+53
