@@ -1,0 +1,41 @@
+1class Solution {
+2public:
+3    bool isTrionic(vector<int>& nums) {
+4        int n = nums.size();
+5      
+6        // Phase 1: Find the end of the first increasing segment
+7        // Start from index 0 and move right while values are increasing
+8        int firstPeakIndex = 0;
+9        while (firstPeakIndex < n - 2 && nums[firstPeakIndex] < nums[firstPeakIndex + 1]) {
+10            firstPeakIndex++;
+11        }
+12      
+13        // If no increasing segment found at the beginning, pattern is invalid
+14        if (firstPeakIndex == 0) {
+15            return false;
+16        }
+17      
+18        // Phase 2: Find the end of the decreasing segment (valley)
+19        // Start from the peak and move right while values are decreasing
+20        int valleyIndex = firstPeakIndex;
+21        while (valleyIndex < n - 1 && nums[valleyIndex] > nums[valleyIndex + 1]) {
+22            valleyIndex++;
+23        }
+24      
+25        // If no decreasing segment found or it reaches the end, pattern is invalid
+26        if (valleyIndex == firstPeakIndex || valleyIndex == n - 1) {
+27            return false;
+28        }
+29      
+30        // Phase 3: Verify the final increasing segment
+31        // Start from the valley and check if values increase until the end
+32        int currentIndex = valleyIndex;
+33        while (currentIndex < n - 1 && nums[currentIndex] < nums[currentIndex + 1]) {
+34            currentIndex++;
+35        }
+36      
+37        // Valid trionic pattern if the final increasing segment reaches the last element
+38        return currentIndex == n - 1;
+39    }
+40};
+41
